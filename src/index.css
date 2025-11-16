@@ -5,6 +5,18 @@
 @tailwind utilities;
 
 @layer base {
+  /* Enable stronger scroll snapping on desktop for smooth section transitions */
+  @media (min-width: 1024px) {
+    html {
+      scroll-snap-type: y mandatory;
+    }
+    section,
+    footer {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
+  }
+
   * {
     scroll-behavior: smooth;
   }
@@ -13,6 +25,8 @@
     @apply bg-gray-900 text-white;
     overflow-x: hidden;
   }
+
+  /* Mobile/tablet keep natural scroll (no snap) */
 }
 
 @layer utilities {
@@ -422,4 +436,42 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* Section wipe overlay (scroll transition) */
+  .wipe-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 40;
+    overflow: hidden;
+  }
+  .wipe-overlay::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 160vh;
+    background: linear-gradient(180deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.25) 12%, rgba(147,51,234,0.30) 35%, rgba(147,51,234,0.20) 60%, rgba(0,0,0,0) 100%);
+    filter: blur(6px);
+  }
+  .wipe-down::before {
+    top: 100%;
+    animation: wipe-move-down 700ms cubic-bezier(.22,.61,.36,1) forwards;
+  }
+  .wipe-up::before {
+    bottom: 100%;
+    animation: wipe-move-up 700ms cubic-bezier(.22,.61,.36,1) forwards;
+  }
+}
+
+/* Wipe keyframes */
+@keyframes wipe-move-down {
+  0% { transform: translateY(0); opacity: 0.7; }
+  50% { opacity: 0.5; }
+  100% { transform: translateY(-200%); opacity: 0; }
+}
+@keyframes wipe-move-up {
+  0% { transform: translateY(0); opacity: 0.7; }
+  50% { opacity: 0.5; }
+  100% { transform: translateY(200%); opacity: 0; }
 }

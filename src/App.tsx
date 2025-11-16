@@ -8,11 +8,13 @@ import Contact from './components/Contact';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import Ripples from './components/Ripples';
+import SectionTransitions from './components/SectionTransitions';
 
 function App() {
   return (
     <div className="min-h-screen bg-gray-900">
       <Ripples />
+      <SectionTransitions />
       <ScrollProgress />
       <Hero />
       <About />
