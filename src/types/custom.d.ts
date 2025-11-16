@@ -26,3 +26,9 @@ declare module 'react/jsx-runtime' {
   export function jsxs(type: any, props?: any, key?: any): any;
   export function jsxDEV(type: any, props?: any, key?: any): any;
 }
+
+// Allow importing static assets like PDFs
+declare module '*.pdf' {
+  const src: string;
+  export default src;
+}

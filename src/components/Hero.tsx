@@ -1,4 +1,8 @@
 import { ArrowRight, Linkedin, FileText } from 'lucide-react';
+// Import resume asset as fallback if env URL isn't set
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import bundledResume from '../../resume.pdf';
 import { useEffect, useState } from 'react';
 
 export default function Hero() {
@@ -6,7 +10,8 @@ export default function Hero() {
   const skills = ['Machine Learning', 'Deep Learning', 'Computer Vision', 'Natural Language Processing', 'Neural Networks'];
   const [skillIndex, setSkillIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const resumeUrl = import.meta.env.VITE_RESUME_URL || '/resume.pdf';
+  const external = (import.meta.env.VITE_RESUME_URL as string) || '';
+  const resumeUrl: string = /^https?:\/\//i.test(external) ? external : bundledResume;
 
   useEffect(() => {
     const currentSkill = skills[skillIndex];
