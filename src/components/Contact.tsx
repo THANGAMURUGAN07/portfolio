@@ -1,178 +1,252 @@
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Mail, Phone, MapPin, Send, CheckCircle2, XCircle } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 
 export default function Contact() {
+  const [isVisible, setIsVisible] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-  const [status, setStatus] = useState<'idle'|'sending'|'sent'|'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
-  const sendEmail = async () => {
-    if (status === 'sending') return;
-    setStatus('sending');
-    setErrorMessage('');
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.2 }
+    );
 
-    const emailjsService = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const emailjsTemplate = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-    const emailjsKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-    const emailjsEnabled = !!(emailjsService && emailjsTemplate && emailjsKey);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
 
-    try {
-      if (emailjsEnabled) {
-        // Send via EmailJS
-        const result = await emailjs.send(
-          emailjsService,
-          emailjsTemplate,
+    return () => observer.disconnect();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (sending) return;
+    setSending(true);
+    setResult(null);
+
+    const tryEmailJS = async () => {
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID as string | undefined;
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID as string | undefined;
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY as string | undefined;
+
+      if (serviceId && templateId && publicKey) {
+        await emailjs.send(
+          serviceId,
+          templateId,
           {
+            from_name: formData.name,
+            from_email: formData.email,
             name: formData.name,
             email: formData.email,
+            user_name: formData.name,
+            user_email: formData.email,
+            reply_to: formData.email,
             message: formData.message,
           },
-          { publicKey: emailjsKey }
+          { publicKey }
         );
-        if (result.status !== 200) {
-          throw new Error(`EmailJS failed (status ${result.status})`);
-        }
-        setStatus('sent');
-        return;
+        setResult({ ok: true, message: 'Message sent via EmailJS fallback. Thank you!' });
+        setFormData({ name: '', email: '', message: '' });
+        return true;
       }
+      return false;
+    };
 
-      // Fallback to backend API
-      const endpoint = (import.meta.env.VITE_EMAIL_API_URL || 'http://localhost:3001') + '/send-email';
-      const res = await fetch(endpoint, {
+    try {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error((data as any).error || `Request failed (${res.status})`);
+
+      if (res.ok) {
+        setResult({ ok: true, message: 'Message sent successfully. I will get back to you soon!' });
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        const tried = await tryEmailJS();
+        if (!tried) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.error || 'Failed to send message');
+        }
       }
-      setStatus('sent');
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      // eslint-disable-next-line no-console
-      console.error('Send email failed', msg);
-      setErrorMessage(emailjsEnabled ? `EmailJS: ${msg}` : msg);
-      setStatus('error');
+    } catch (err: any) {
+      // Network/proxy errors (e.g., ECONNREFUSED) → attempt EmailJS
+      const tried = await tryEmailJS();
+      if (!tried) {
+        setResult({ ok: false, message: err?.message || 'Something went wrong. Please try again later.' });
+      }
+    } finally {
+      setSending(false);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="particle particle-1"></div>
-        <div className="particle particle-2"></div>
-        <div className="particle particle-3"></div>
+    <section ref={sectionRef} id="contact" className="py-24 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-float-delayed"></div>
       </div>
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-16 animate-fade-in">
-          Get In <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Touch</span>
-        </h2>
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-4">
+            Get In Touch
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+          <p className="text-gray-400 mt-6 text-lg">Let's collaborate on something amazing</p>
+        </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 max-w-6xl mx-auto">
-          <div className="space-y-8 animate-fade-in-left">
-            <div className="glass-card p-6 md:p-8 rounded-2xl hover:scale-105 transition-transform duration-300">
-              <div className="flex items-start gap-4">
-                <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg animate-float">
-                  <Mail className="w-6 h-6 text-white" />
+        <div className="grid md:grid-cols-2 gap-12">
+          <div className={`space-y-8 transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+            <div className="group">
+              <h3 className="text-3xl font-bold text-white mb-6">Contact Information</h3>
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 group/item">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center transform group-hover/item:scale-110 group-hover/item:rotate-12 transition-all duration-500 shadow-lg">
+                      <Mail className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl blur-xl opacity-0 group-hover/item:opacity-50 transition-opacity duration-500 animate-float pointer-events-none"></div>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Email</p>
+                    <a href="mailto:ramarv7859@gmail.com" className="text-white text-lg hover:text-blue-400 transition-colors duration-300">
+                      ramarv7859@gmail.com
+                    </a>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Email</h3>
-                  <a href="mailto:ramarv7859@gmail.com" className="text-gray-400 hover:text-blue-400 transition-colors">
-                    ramarv7859@gmail.com
-                  </a>
+
+                <div className="flex items-start gap-4 group/item">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center transform group-hover/item:scale-110 group-hover/item:rotate-12 transition-all duration-500 shadow-lg">
+                      <Phone className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl blur-xl opacity-0 group-hover/item:opacity-50 transition-opacity duration-500 animate-float pointer-events-none"></div>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Phone</p>
+                    <a href="tel:9080002378" className="text-white text-lg hover:text-purple-400 transition-colors duration-300">
+                      9080002378
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4 group/item">
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center transform group-hover/item:scale-110 group-hover/item:rotate-12 transition-all duration-500 shadow-lg">
+                      <MapPin className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl blur-xl opacity-0 group-hover/item:opacity-50 transition-opacity duration-500 animate-float pointer-events-none"></div>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Location</p>
+                    <p className="text-white text-lg">
+                      679/8 Aaladipatti Street,<br />
+                      Venkateshwarapuram,<br />
+                      Srivilliputtur
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="glass-card p-6 md:p-8 rounded-2xl hover:scale-105 transition-transform duration-300 animation-delay-200">
-              <div className="flex items-start gap-4">
-                <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg animate-float animation-delay-200">
-                  <Phone className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Phone</h3>
-                  <a href="tel:9080002378" className="text-gray-400 hover:text-green-400 transition-colors">
-                    9080002378
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-6 md:p-8 rounded-2xl hover:scale-105 transition-transform duration-300 animation-delay-400">
-              <div className="flex items-start gap-4">
-                <div className="p-4 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg animate-float animation-delay-400">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Address</h3>
-                  <p className="text-gray-400">
-                    679/8 Aaladipatti Street<br />
-                    Venkateshwarapuram, Srivilliputtur
-                  </p>
-                </div>
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none"></div>
+              <div className="relative bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl rounded-3xl p-6 border border-white/10">
+                <p className="text-gray-300 leading-relaxed">
+                  I'm always excited to discuss new projects, creative ideas, or opportunities to be part of your vision.
+                  Feel free to reach out!
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="animate-fade-in-right">
-            <form onSubmit={(e) => { e.preventDefault(); sendEmail(); }} className="glass-card p-6 md:p-8 rounded-2xl space-y-5 md:space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="text-white font-medium block">Name</label>
+          <div className={`transition-all duration-1000 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="relative group">
                 <input
                   type="text"
-                  id="name"
+                  name="name"
+                  placeholder="Your Name"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2.5 md:py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 hover:border-gray-600"
+                  onChange={handleChange}
+                  onFocus={() => setFocusedField('name')}
+                  onBlur={() => setFocusedField(null)}
+                  className="w-full px-6 py-4 bg-gray-800/50 backdrop-blur-xl border-2 border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all duration-300"
                   required
                 />
+                <div className={`absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl blur-xl opacity-0 transition-opacity duration-300 ${focusedField === 'name' ? 'opacity-30' : ''} pointer-events-none`}></div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-white font-medium block">Email</label>
+              <div className="relative group">
                 <input
                   type="email"
-                  id="email"
+                  name="email"
+                  placeholder="Your Email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-4 py-2.5 md:py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 hover:border-gray-600"
+                  onChange={handleChange}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField(null)}
+                  className="w-full px-6 py-4 bg-gray-800/50 backdrop-blur-xl border-2 border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-300"
                   required
                 />
+                <div className={`absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur-xl opacity-0 transition-opacity duration-300 ${focusedField === 'email' ? 'opacity-30' : ''} pointer-events-none`}></div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="message" className="text-white font-medium block">Message</label>
+              <div className="relative group">
                 <textarea
-                  id="message"
+                  name="message"
+                  placeholder="Your Message"
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows={5}
-                  className="w-full px-4 py-2.5 md:py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/50 transition-all duration-300 hover:border-gray-600 resize-none"
+                  onChange={handleChange}
+                  onFocus={() => setFocusedField('message')}
+                  onBlur={() => setFocusedField(null)}
+                  rows={6}
+                  className="w-full px-6 py-4 bg-gray-800/50 backdrop-blur-xl border-2 border-gray-700 rounded-2xl text-white placeholder-gray-400 focus:outline-none focus:border-pink-500 transition-all duration-300 resize-none"
                   required
-                />
+                ></textarea>
+                <div className={`absolute inset-0 bg-gradient-to-r from-pink-500 to-orange-500 rounded-2xl blur-xl opacity-0 transition-opacity duration-300 ${focusedField === 'message' ? 'opacity-30' : ''} pointer-events-none`}></div>
               </div>
+
+              {result && (
+                <div
+                  className={`flex items-center gap-2 p-3 rounded-xl border ${
+                    result.ok ? 'border-green-500/40 bg-green-500/10 text-green-300' : 'border-red-500/40 bg-red-500/10 text-red-300'
+                  }`}
+                >
+                  {result.ok ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                  <span className="text-sm">{result.message}</span>
+                </div>
+              )}
 
               <button
                 type="submit"
-                disabled={status === 'sending' || !formData.name || !formData.email || !formData.message}
-                aria-disabled={status === 'sending' || !formData.name || !formData.email || !formData.message}
-                className="group w-full px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={sending}
+                className={`group relative w-full px-8 py-4 rounded-2xl font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50 text-white ${
+                  sending ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600'
+                }`}
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  {status === 'sending' ? 'Sending…' : status === 'sent' ? 'Sent' : 'Send Message'}
-                  <Send className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span>{sending ? 'Sending…' : 'Send Message'}</span>
+                  <Send className="w-5 h-5 transform group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-300" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-              {status === 'error' && (
-                <div className="text-red-400 mt-2">
-                  Sending failed: {errorMessage || 'Please try again or email directly.'}
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-white rounded-full animate-ping"></div>
                 </div>
-              )}
-              {status === 'sent' && <div className="text-green-400 mt-2">Message sent — thank you!</div>}
+              </button>
             </form>
           </div>
         </div>

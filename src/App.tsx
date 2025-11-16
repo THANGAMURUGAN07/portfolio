@@ -6,14 +6,10 @@ import Education from './components/Education';
 import Blog from './components/Blog';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
-import ScrollProgress from './components/ScrollProgress';
-import Ripples from './components/Ripples';
 
 function App() {
   return (
     <div className="min-h-screen bg-gray-900">
-      <Ripples />
-      <ScrollProgress />
       <Hero />
       <About />
       <Skills />
