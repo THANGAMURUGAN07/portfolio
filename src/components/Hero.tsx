@@ -4,6 +4,7 @@ import { ArrowRight, Linkedin, FileText } from 'lucide-react';
 // @ts-ignore
 import bundledResume from '../../resume.pdf';
 import { useEffect, useState } from 'react';
+import ResumeModal from './ResumeModal';
 
 export default function Hero() {
   const [typedText, setTypedText] = useState('');
@@ -14,6 +15,8 @@ export default function Hero() {
   const basePath = (import.meta.env.BASE_URL as string) || '/';
   const publicResume = `${basePath}resume.pdf`;
   const resumeUrl: string = /^https?:\/\//i.test(external) ? external : (publicResume || bundledResume);
+
+  const [showResume, setShowResume] = useState(false);
 
   useEffect(() => {
     const currentSkill = skills[skillIndex];
@@ -86,11 +89,9 @@ export default function Hero() {
               that solve real-world problems through Machine Learning, Deep Learning, and Computer Vision.
             </p>
             <div className="flex flex-wrap gap-3 md:gap-4 animate-fade-in animation-delay-800">
-              <a
-                href={resumeUrl}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setShowResume(true)}
                 className="group relative px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-glow"
               >
                 <span className="relative z-10 flex items-center gap-2">
@@ -98,7 +99,7 @@ export default function Hero() {
                   <FileText className="w-5 h-5 transition-transform group-hover:rotate-12" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </a>
+              </button>
               <a
                 href="https://www.linkedin.com/in/thangamuruganr07"
                 target="_blank"
@@ -109,6 +110,7 @@ export default function Hero() {
                 <Linkedin className="w-5 h-5 transition-transform group-hover:rotate-12" />
               </a>
             </div>
+            <ResumeModal resumeUrl={resumeUrl} open={showResume} onClose={() => setShowResume(false)} />
           </div>
 
           <div className="flex-1 flex justify-center animate-fade-in animation-delay-400">
