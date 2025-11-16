@@ -6,9 +6,7 @@
 
 @layer base {
 
-  * {
-    scroll-behavior: smooth;
-  }
+  /* Removed global smooth scrolling for native behavior */
 
   body {
     @apply bg-gray-900 text-white;
