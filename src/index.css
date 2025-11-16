@@ -5,17 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  /* Enable stronger scroll snapping on desktop for smooth section transitions */
-  @media (min-width: 1024px) {
-    html {
-      scroll-snap-type: y mandatory;
-    }
-    section,
-    footer {
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-  }
 
   * {
     scroll-behavior: smooth;
@@ -26,7 +15,7 @@
     overflow-x: hidden;
   }
 
-  /* Mobile/tablet keep natural scroll (no snap) */
+  /* Scroll snapping removed per user request for natural scroll */
 }
 
 @layer utilities {
