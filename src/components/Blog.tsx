@@ -54,21 +54,21 @@ export default function Blog() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 bg-gray-900 relative overflow-hidden">
+    <section ref={sectionRef} className="py-16 md:py-24 bg-gray-900 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="grid-background"></div>
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
-        <h2 className={`text-4xl md:text-5xl font-bold text-white text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
+        <h2 className={`text-3xl md:text-5xl font-bold text-white text-center mb-10 md:mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           Blog & <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Insights</span>
         </h2>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
           {posts.map((post, index) => (
             <div
               key={index}
-              className={`group glass-card p-8 rounded-2xl transition-all duration-700 hover:scale-105 cursor-pointer relative overflow-hidden ${
+              className={`group glass-card p-5 md:p-8 rounded-2xl transition-all duration-700 hover:scale-105 cursor-pointer relative overflow-hidden ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
               style={{ transitionDelay: `${index * 150}ms` }}
@@ -86,15 +86,15 @@ export default function Blog() {
                 </span>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-purple-500 transition-all duration-300">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-2.5 md:mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-400 group-hover:to-purple-500 transition-all duration-300">
                 {post.title}
               </h3>
 
-              <p className="text-gray-400 mb-4 leading-relaxed">
+              <p className="text-gray-400 mb-3 md:mb-4 leading-relaxed text-sm md:text-base">
                 {post.excerpt}
               </p>
 
-              <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <div className="flex items-center gap-2 text-gray-500 text-xs md:text-sm">
                 <Calendar className="w-4 h-4" />
                 <span>{post.date}</span>
               </div>

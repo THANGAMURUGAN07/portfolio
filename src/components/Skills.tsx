@@ -63,19 +63,19 @@ export default function Skills() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-24 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
+    <section ref={sectionRef} className="py-16 md:py-24 bg-gradient-to-b from-gray-900 to-gray-800 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="particle particle-1"></div>
         <div className="particle particle-2"></div>
         <div className="particle particle-3"></div>
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-4 md:px-6 relative z-10">
         <h2 className={`text-4xl md:text-5xl font-bold text-white text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           Technical <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Skills</span>
         </h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {(() => {
             const remainder = skills.length % columns;
             const cutoff = remainder === 0 ? skills.length : skills.length - remainder;
@@ -84,22 +84,22 @@ export default function Skills() {
               const Icon = skill.icon;
               return (
                 <div
-                  className={`group glass-card p-6 rounded-2xl text-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 cursor-pointer ${
+                  className={`group glass-card p-4 md:p-6 rounded-2xl text-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 cursor-pointer ${
                     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                   }`}
                   style={{ transitionDelay: `${index * 80}ms` }}
                 >
                   <div className="relative inline-block mb-4">
                     <div className={`absolute inset-0 bg-gradient-to-r ${skill.color} rounded-full blur-xl opacity-40 group-hover:opacity-100 transition-opacity duration-300 animate-gradient-shift`} />
-                    <div className={`relative w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${skill.color} flex items-center justify-center group-hover:rotate-12 transition-transform duration-300`}>
-                      <Icon className="w-8 h-8 text-white" />
+                    <div className={`relative w-12 h-12 md:w-16 md:h-16 mx-auto rounded-full bg-gradient-to-r ${skill.color} flex items-center justify-center group-hover:rotate-12 transition-transform duration-300`}>
+                      <Icon className="w-7 h-7 md:w-8 md:h-8 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-white font-semibold mb-3 transition-colors duration-300">
+                  <h3 className="text-white font-semibold mb-2 md:mb-3 text-sm md:text-base transition-colors duration-300">
                     {skill.name}
                   </h3>
 
-                  <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden" aria-hidden>
+                  <div className="w-full bg-gray-800 h-2 md:h-3 rounded-full overflow-hidden" aria-hidden>
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-1000"
                       style={{ width: isVisible ? `${skill.level}%` : '0%' , transitionDelay: `${index * 80}ms`}}
@@ -128,7 +128,7 @@ export default function Skills() {
           const after = columns - remainder - before;
           return (
             <div className="mt-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                 {Array.from({ length: before }).map((_, i) => (
                   <div key={`ph-b-${i}`} aria-hidden='true' />
                 ))}
@@ -139,21 +139,21 @@ export default function Skills() {
                   return (
                     <div
                       key={`last-${i}`}
-                      className={`group glass-card p-6 rounded-2xl text-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 cursor-pointer ${
+                      className={`group glass-card p-4 md:p-6 rounded-2xl text-center transition-all duration-500 hover:scale-105 hover:-translate-y-2 cursor-pointer ${
                         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                       }`}
                       style={{ transitionDelay: `${index * 80}ms` }}
                     >
                       <div className="relative inline-block mb-4">
                         <div className={`absolute inset-0 bg-gradient-to-r ${s.color} rounded-full blur-xl opacity-40 group-hover:opacity-100 transition-opacity duration-300 animate-gradient-shift`} />
-                        <div className={`relative w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${s.color} flex items-center justify-center group-hover:rotate-12 transition-transform duration-300`}>
-                          <Icon className="w-8 h-8 text-white" />
+                        <div className={`relative w-12 h-12 md:w-16 md:h-16 mx-auto rounded-full bg-gradient-to-r ${s.color} flex items-center justify-center group-hover:rotate-12 transition-transform duration-300`}>
+                          <Icon className="w-7 h-7 md:w-8 md:h-8 text-white" />
                         </div>
                       </div>
-                      <h3 className="text-white font-semibold mb-3 transition-colors duration-300">
+                      <h3 className="text-white font-semibold mb-2 md:mb-3 text-sm md:text-base transition-colors duration-300">
                         {s.name}
                       </h3>
-                      <div className="w-full bg-gray-800 h-3 rounded-full overflow-hidden" aria-hidden>
+                      <div className="w-full bg-gray-800 h-2 md:h-3 rounded-full overflow-hidden" aria-hidden>
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-green-400 to-blue-500 transition-all duration-1000"
                           style={{ width: isVisible ? `${s.level}%` : '0%' , transitionDelay: `${index * 80}ms`}}
