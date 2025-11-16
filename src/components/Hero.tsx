@@ -11,7 +11,9 @@ export default function Hero() {
   const [skillIndex, setSkillIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const external = (import.meta.env.VITE_RESUME_URL as string) || '';
-  const resumeUrl: string = /^https?:\/\//i.test(external) ? external : bundledResume;
+  const basePath = (import.meta.env.BASE_URL as string) || '/';
+  const publicResume = `${basePath}resume.pdf`;
+  const resumeUrl: string = /^https?:\/\//i.test(external) ? external : (publicResume || bundledResume);
 
   useEffect(() => {
     const currentSkill = skills[skillIndex];
@@ -86,6 +88,7 @@ export default function Hero() {
             <div className="flex flex-wrap gap-3 md:gap-4 animate-fade-in animation-delay-800">
               <a
                 href={resumeUrl}
+                download
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full font-semibold overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-glow"
