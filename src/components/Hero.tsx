@@ -1,4 +1,4 @@
-import { ArrowRight, Linkedin, FileText } from 'lucide-react';
+import { ArrowRight, Linkedin, FileText, Download } from 'lucide-react';
 // Import resume asset as fallback if env URL isn't set
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -100,6 +100,16 @@ export default function Hero() {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
+              <a
+                href={resumeUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group px-6 py-3 md:px-8 md:py-4 border-2 border-purple-500 rounded-full font-semibold transition-all duration-300 hover:bg-purple-600 hover:scale-105 hover:shadow-glow flex items-center gap-2"
+              >
+                Download
+                <Download className="w-5 h-5 transition-transform group-hover:rotate-12" />
+              </a>
               <a
                 href="https://www.linkedin.com/in/thangamuruganr07"
                 target="_blank"
